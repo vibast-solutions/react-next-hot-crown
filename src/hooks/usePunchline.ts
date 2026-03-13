@@ -14,7 +14,7 @@ export function usePunchline(lines: readonly string[]): string {
         } while (next === prev && lines.length > 1);
         return next;
       });
-    }, 30_000);
+    }, 15_000);
 
     return () => clearInterval(interval);
   }, [lines]);
