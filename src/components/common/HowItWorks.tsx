@@ -65,7 +65,7 @@ export default function HowItWorks() {
                   <li>Once a king exists, anyone can send soldiers to attack.</li>
                   <li>1 token = 1 soldier. Send 1 to 10 at a time.</li>
                   <li>Each action resets the 3-minute battle timer.</li>
-                  <li>If attackers outnumber defenders when time runs out, the king falls.</li>
+                  <li>If attackers outnumber defenders when time runs out, the king falls. A tie favors the king.</li>
                 </ul>
               </div>
 
@@ -77,7 +77,7 @@ export default function HowItWorks() {
                 </div>
                 <ul className="text-sm text-gray-300 space-y-1.5 ml-6">
                   <li>Anyone can defend the king by sending soldiers.</li>
-                  <li>If defenders hold the line, the king survives and gets rewarded.</li>
+                  <li>If defenders hold the line (or it&apos;s a tie), the king survives and gets rewarded.</li>
                   <li>Defenders don&apos;t get paid — they&apos;re doing it for loyalty (or fun).</li>
                 </ul>
               </div>
