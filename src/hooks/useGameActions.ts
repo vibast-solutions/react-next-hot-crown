@@ -6,7 +6,7 @@ import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 import {
   getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import { useProgram } from './useProgram';
 import { useGameContext } from '@/context/GameContext';
@@ -27,7 +27,8 @@ export function useGameActions() {
     const throneVault = await getAssociatedTokenAddress(
       TOKEN_MINT,
       gameStatePda,
-      true
+      true,
+      TOKEN_2022_PROGRAM_ID
     );
     return { gameStatePda, throneVault };
   }, []);
@@ -55,7 +56,7 @@ export function useGameActions() {
   const placeBid = useCallback(async () => {
     if (!program || !publicKey) return;
     const { gameStatePda, throneVault } = await getGameAccounts();
-    const bidderTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, publicKey);
+    const bidderTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, publicKey, false, TOKEN_2022_PROGRAM_ID);
 
     return execute(() =>
       program.methods
@@ -67,7 +68,7 @@ export function useGameActions() {
           throneVault,
           devWalletAta: DEV_WALLET_ATA,
           tokenMint: TOKEN_MINT,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
         })
         .rpc()
     );
@@ -76,7 +77,7 @@ export function useGameActions() {
   const attack = useCallback(async (soldiers: number) => {
     if (!program || !publicKey) return;
     const { gameStatePda, throneVault } = await getGameAccounts();
-    const attackerTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, publicKey);
+    const attackerTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, publicKey, false, TOKEN_2022_PROGRAM_ID);
 
     return execute(() =>
       program.methods
@@ -88,7 +89,7 @@ export function useGameActions() {
           throneVault,
           devWalletAta: DEV_WALLET_ATA,
           tokenMint: TOKEN_MINT,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
         })
         .rpc()
     );
@@ -97,7 +98,7 @@ export function useGameActions() {
   const defend = useCallback(async (soldiers: number) => {
     if (!program || !publicKey) return;
     const { gameStatePda, throneVault } = await getGameAccounts();
-    const defenderTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, publicKey);
+    const defenderTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, publicKey, false, TOKEN_2022_PROGRAM_ID);
 
     return execute(() =>
       program.methods
@@ -109,7 +110,7 @@ export function useGameActions() {
           throneVault,
           devWalletAta: DEV_WALLET_ATA,
           tokenMint: TOKEN_MINT,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
         })
         .rpc()
     );
@@ -122,7 +123,7 @@ export function useGameActions() {
     // Fetch on-chain state to get candidate
     const raw = await (program.account as any).gameState.fetch(gameStatePda);
     const candidateKey = raw.candidate as PublicKey;
-    const kingTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, candidateKey);
+    const kingTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, candidateKey, false, TOKEN_2022_PROGRAM_ID);
 
     return execute(() =>
       program.methods
@@ -132,7 +133,8 @@ export function useGameActions() {
           gameState: gameStatePda,
           throneVault,
           kingTokenAccount,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenMint: TOKEN_MINT,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
         })
         .rpc()
     );
@@ -145,7 +147,7 @@ export function useGameActions() {
     // Fetch on-chain state to get king
     const raw = await (program.account as any).gameState.fetch(gameStatePda);
     const kingKey = raw.king as PublicKey;
-    const kingTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, kingKey);
+    const kingTokenAccount = await getAssociatedTokenAddress(TOKEN_MINT, kingKey, false, TOKEN_2022_PROGRAM_ID);
 
     return execute(() =>
       program.methods
@@ -156,7 +158,7 @@ export function useGameActions() {
           throneVault,
           kingTokenAccount,
           tokenMint: TOKEN_MINT,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_2022_PROGRAM_ID,
         })
         .rpc()
     );

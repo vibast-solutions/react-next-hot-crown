@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
+import { getAssociatedTokenAddress, getAccount, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import { TOKEN_MINT, GAME_CONSTANTS } from '@/lib/constants';
 
 export function useTokenBalance(): number | null {
@@ -20,8 +20,8 @@ export function useTokenBalance(): number | null {
 
     const fetchBalance = async () => {
       try {
-        const ata = await getAssociatedTokenAddress(TOKEN_MINT, publicKey);
-        const account = await getAccount(connection, ata);
+        const ata = await getAssociatedTokenAddress(TOKEN_MINT, publicKey, false, TOKEN_2022_PROGRAM_ID);
+        const account = await getAccount(connection, ata, undefined, TOKEN_2022_PROGRAM_ID);
         if (!cancelled) {
           setBalance(Number(account.amount) / GAME_CONSTANTS.ONE_TOKEN);
         }

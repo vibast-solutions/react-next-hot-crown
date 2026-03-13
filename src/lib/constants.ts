@@ -13,15 +13,15 @@ export const GAME_CONSTANTS = {
 } as const;
 
 export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || '9nogRVSxxkHBBHfqzznqPqcVrUedmhoMBqvD1Xp3bd7x'
+  process.env.NEXT_PUBLIC_PROGRAM_ID || 'CnyJZNQRtwJcfwHcXSSi2TXYwwWx3vffeRJfu5qLEMAV'
 );
 
 export const TOKEN_MINT = new PublicKey(
-  process.env.NEXT_PUBLIC_TOKEN_MINT || '8gKUgdkSGMqQMgCxnMQEDV19Eb3riysKgh9MvbEDiNhf'
+  process.env.NEXT_PUBLIC_TOKEN_MINT || 'Gk9B6f3LBmmRhniF1Q3fnvzWV1vjBS4cfxpc4XN8xirp'
 );
 
 export const DEV_WALLET_ATA = new PublicKey(
-  process.env.NEXT_PUBLIC_DEV_WALLET_ATA || 'DePPX2VJzQuUFVc56sTHRKkvpoE8Z92XT24Pu6RPCM69'
+  process.env.NEXT_PUBLIC_DEV_WALLET_ATA || 'CN2fYQocQ3T8ds5FXeWYJGFdaNKpqEwCZTUiuMRHiZ6j'
 );
 
 export const SOLANA_RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'https://api.devnet.solana.com';
