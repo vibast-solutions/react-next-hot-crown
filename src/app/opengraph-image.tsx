@@ -24,6 +24,7 @@ export default async function Image() {
       >
         {/* Throne image — centered, cropped */}
         <img
+          alt=""
           src={base64}
           style={{
             position: 'absolute',

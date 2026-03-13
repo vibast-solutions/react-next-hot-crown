@@ -23,6 +23,7 @@ export default async function Image() {
         }}
       >
         <img
+          alt=""
           src={base64}
           style={{
             position: 'absolute',
