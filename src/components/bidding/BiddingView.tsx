@@ -26,17 +26,17 @@ export default function BiddingView() {
 
   return (
     <div className="max-w-md mx-auto space-y-6">
-      {/* Timer */}
-      <div className="flex justify-center">
-        <Timer deadline={bidding.deadline} label="Bidding ends in" />
-      </div>
-
       {/* Crown + Candidate */}
       <div className="bg-royal-midnight-light/50 border border-royal-purple/20 rounded-2xl p-6">
         <CandidateDisplay
           candidateWallet={bidding.candidateWallet}
           currentBidAmount={bidding.currentBidAmount}
         />
+      </div>
+
+      {/* Timer */}
+      <div className="flex justify-center">
+        <Timer deadline={bidding.deadline} label="Bidding ends in" />
       </div>
 
       {/* Throne Pot */}

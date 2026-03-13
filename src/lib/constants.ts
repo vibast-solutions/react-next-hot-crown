@@ -13,7 +13,7 @@ export const GAME_CONSTANTS = {
 } as const;
 
 export const PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_PROGRAM_ID || '6vSPYSZAMiHS4M9SKczzWCFmD1qR1wcPME28c7Xm6Ery'
+  process.env.NEXT_PUBLIC_PROGRAM_ID || '9nogRVSxxkHBBHfqzznqPqcVrUedmhoMBqvD1Xp3bd7x'
 );
 
 export const TOKEN_MINT = new PublicKey(
