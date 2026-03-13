@@ -1,7 +1,9 @@
 'use client';
 
 import { useGameContext } from '@/context/GameContext';
+import { useGameActions } from '@/hooks/useGameActions';
 import { useCountdown } from '@/hooks/useCountdown';
+import { useWallet } from '@solana/wallet-adapter-react';
 import Timer from '@/components/common/Timer';
 import KingDisplay from './KingDisplay';
 import ArmyDisplay from './ArmyDisplay';
@@ -10,7 +12,9 @@ import AttackPanel from './AttackPanel';
 import DefendPanel from './DefendPanel';
 
 export default function BattleView() {
-  const { state, dispatch } = useGameContext();
+  const { state } = useGameContext();
+  const { finalizeBattle, sending } = useGameActions();
+  const { connected } = useWallet();
   const { battle } = state;
   const { isExpired } = useCountdown(battle.deadline);
 
@@ -28,8 +32,12 @@ export default function BattleView() {
     ? 'Defense is already ahead — only attackers can act now'
     : undefined;
 
-  const handleSettle = () => {
-    dispatch({ type: 'SETTLE_BATTLE' });
+  const handleSettle = async () => {
+    try {
+      await finalizeBattle();
+    } catch {
+      // Error handled in useGameActions
+    }
   };
 
   // Idle state — no battle active, show full king image + attack-only panel
@@ -73,9 +81,10 @@ export default function BattleView() {
       {isExpired ? (
         <button
           onClick={handleSettle}
-          className="w-full py-4 rounded-xl font-cinzel text-lg font-bold bg-gradient-to-r from-crown-ember to-crown-flame text-white shadow-lg shadow-crown-ember/30 hover:shadow-crown-flame/40 transition-all"
+          disabled={!connected || sending}
+          className="w-full py-4 rounded-xl font-cinzel text-lg font-bold bg-gradient-to-r from-crown-ember to-crown-flame text-white shadow-lg shadow-crown-ember/30 hover:shadow-crown-flame/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Settle Battle
+          {sending ? 'Settling...' : 'Settle Battle'}
         </button>
       ) : (
         <div className="grid grid-cols-2 gap-4">

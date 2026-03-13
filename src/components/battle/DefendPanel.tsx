@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { useGameContext } from '@/context/GameContext';
+import { useGameActions } from '@/hooks/useGameActions';
 import { GAME_CONSTANTS } from '@/lib/constants';
 import { Shield } from 'lucide-react';
 import { usePunchline } from '@/hooks/usePunchline';
@@ -15,17 +15,21 @@ interface DefendPanelProps {
 
 export default function DefendPanel({ disabled, disabledReason }: DefendPanelProps) {
   const [soldiers, setSoldiers] = useState(1);
-  const { connected, publicKey } = useWallet();
-  const { dispatch } = useGameContext();
+  const { connected } = useWallet();
+  const { defend, sending } = useGameActions();
   const punchline = usePunchline(PUNCHLINES.defendPanel);
 
-  const handleDefend = () => {
-    if (!publicKey || disabled) return;
-    dispatch({ type: 'DEFEND', soldiers, wallet: publicKey.toBase58() });
-    setSoldiers(1);
+  const handleDefend = async () => {
+    if (disabled) return;
+    try {
+      await defend(soldiers);
+      setSoldiers(1);
+    } catch {
+      // Error handled in useGameActions
+    }
   };
 
-  const isDisabled = disabled || !connected;
+  const isDisabled = disabled || !connected || sending;
   const quickValues = [1, 5, 10];
 
   return (
@@ -74,7 +78,7 @@ export default function DefendPanel({ disabled, disabledReason }: DefendPanelPro
         disabled={isDisabled}
         className="w-full py-3 rounded-lg font-cinzel font-bold text-white bg-gradient-to-r from-defend-dark to-defend hover:from-defend to-defend-light transition-all disabled:from-gray-700 disabled:to-gray-600 disabled:cursor-not-allowed"
       >
-        {!connected ? 'Connect Wallet' : `Send ${soldiers} Defender${soldiers > 1 ? 's' : ''}`}
+        {sending ? 'Sending...' : !connected ? 'Connect Wallet' : `Send ${soldiers} Defender${soldiers > 1 ? 's' : ''}`}
       </button>
 
       {/* Disabled Reason */}

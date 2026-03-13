@@ -1,7 +1,7 @@
 'use client';
 
 import { useWallet } from '@solana/wallet-adapter-react';
-import { useGameContext } from '@/context/GameContext';
+import { useGameActions } from '@/hooks/useGameActions';
 import TokenAmount from '@/components/common/TokenAmount';
 
 interface PlaceBidButtonProps {
@@ -10,12 +10,15 @@ interface PlaceBidButtonProps {
 }
 
 export default function PlaceBidButton({ nextRequiredBid, isExpired }: PlaceBidButtonProps) {
-  const { connected, publicKey } = useWallet();
-  const { dispatch } = useGameContext();
+  const { connected } = useWallet();
+  const { placeBid, sending } = useGameActions();
 
-  const handleBid = () => {
-    if (!publicKey) return;
-    dispatch({ type: 'PLACE_BID', wallet: publicKey.toBase58() });
+  const handleBid = async () => {
+    try {
+      await placeBid();
+    } catch {
+      // Error handled in useGameActions
+    }
   };
 
   if (isExpired) {
@@ -25,14 +28,16 @@ export default function PlaceBidButton({ nextRequiredBid, isExpired }: PlaceBidB
   return (
     <button
       onClick={handleBid}
-      disabled={!connected}
+      disabled={!connected || sending}
       className={`w-full py-4 rounded-xl font-cinzel text-lg font-bold transition-all ${
-        connected
+        connected && !sending
           ? 'bg-gradient-to-r from-crown-gold to-crown-ember hover:from-crown-gold-light hover:to-crown-flame text-royal-midnight shadow-lg shadow-crown-gold/20 hover:shadow-crown-gold/40'
           : 'bg-gray-700 text-gray-400 cursor-not-allowed'
       }`}
     >
-      {connected ? (
+      {sending ? (
+        'Sending...'
+      ) : connected ? (
         <>
           Place Bid: <TokenAmount amount={nextRequiredBid} showLabel={false} />
           <span className="text-sm font-normal ml-1">HCRN</span>

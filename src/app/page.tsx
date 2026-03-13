@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import { GameProvider } from '@/context/GameContext';
 import Header from '@/components/layout/Header';
 import GameBoard from '@/components/game/GameBoard';
-import DevToolbar from '@/components/game/DevToolbar';
 import HowItWorks from '@/components/common/HowItWorks';
 import ComingSoon from '@/components/common/ComingSoon';
 
@@ -29,7 +28,6 @@ export default function Home() {
             <GameBoard />
           </main>
           <HowItWorks />
-          <DevToolbar />
         </div>
       </GameProvider>
     </WalletProvider>

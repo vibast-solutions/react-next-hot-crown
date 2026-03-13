@@ -1,180 +1,111 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { GameState, GameAction } from '@/lib/types';
-import { GAME_CONSTANTS } from '@/lib/constants';
-import { MOCK_STATES } from '@/lib/mockData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useConnection } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
+import { Program, AnchorProvider, Idl } from '@coral-xyz/anchor';
+import { GameState } from '@/lib/types';
+import { PROGRAM_ID, GAME_STATE_SEED } from '@/lib/constants';
+import idl from '@/lib/idl/hot_crown.json';
 
-function gameReducer(state: GameState, action: GameAction): GameState {
-  switch (action.type) {
-    case 'PLACE_BID': {
-      const { bidding } = state;
-      const newBidAmount = bidding.nextRequiredBid;
-      const newPot = bidding.thronePot + newBidAmount;
-      const nextBid = Math.ceil(newBidAmount * (1 + GAME_CONSTANTS.BID_INCREMENT_PERCENT / 100));
+const DEFAULT_PUBKEY = PublicKey.default.toBase58();
+const ONE_TOKEN = 1_000_000;
 
-      return {
-        ...state,
-        bidding: {
-          candidateWallet: action.wallet,
-          currentBidAmount: newBidAmount,
-          nextRequiredBid: nextBid,
-          thronePot: newPot,
-          deadline: Date.now() + GAME_CONSTANTS.BIDDING_TIMER_MS,
-        },
-      };
-    }
+function parseOnChainState(raw: any): GameState {
+  const phase = raw.phase.bidding ? 'bidding' : 'battle';
+  const candidateWallet = raw.candidate.toBase58();
+  const kingWallet = raw.king.toBase58();
 
-    case 'SETTLE_BIDDING': {
-      if (!state.bidding.candidateWallet) return state;
-      return {
-        ...state,
-        phase: 'battle',
-        bidding: {
-          candidateWallet: null,
-          currentBidAmount: 0,
-          nextRequiredBid: GAME_CONSTANTS.INITIAL_BID,
-          thronePot: 0,
-          deadline: null,
-        },
-        battle: {
-          kingWallet: state.bidding.candidateWallet,
-          attackArmy: 0,
-          defenseArmy: 0,
-          attackPool: 0,
-          defensePool: 0,
-          deadline: null,
-          isBattleActive: false,
-        },
-      };
-    }
-
-    case 'ATTACK': {
-      const { soldiers } = action;
-      const tokenCost = soldiers * GAME_CONSTANTS.TOKENS_PER_SOLDIER;
-      const afterFee = tokenCost * (1 - GAME_CONSTANTS.DEV_FEE_PERCENT / 100);
-      const newAttackArmy = state.battle.attackArmy + soldiers;
-      const newAttackPool = state.battle.attackPool + afterFee;
-      const isBattleStarting = !state.battle.isBattleActive;
-
-      return {
-        ...state,
-        battle: {
-          ...state.battle,
-          attackArmy: newAttackArmy,
-          attackPool: newAttackPool,
-          isBattleActive: true,
-          deadline: isBattleStarting
-            ? Date.now() + GAME_CONSTANTS.BATTLE_TIMER_MS
-            : state.battle.deadline,
-        },
-      };
-    }
-
-    case 'DEFEND': {
-      const { soldiers } = action;
-      const tokenCost = soldiers * GAME_CONSTANTS.TOKENS_PER_SOLDIER;
-      const afterFee = tokenCost * (1 - GAME_CONSTANTS.DEV_FEE_PERCENT / 100);
-      const newDefenseArmy = state.battle.defenseArmy + soldiers;
-      const newDefensePool = state.battle.defensePool + afterFee;
-      const isBattleStarting = !state.battle.isBattleActive;
-
-      return {
-        ...state,
-        battle: {
-          ...state.battle,
-          defenseArmy: newDefenseArmy,
-          defensePool: newDefensePool,
-          isBattleActive: true,
-          deadline: isBattleStarting
-            ? Date.now() + GAME_CONSTANTS.BATTLE_TIMER_MS
-            : state.battle.deadline,
-        },
-      };
-    }
-
-    case 'SETTLE_BATTLE': {
-      const { battle } = state;
-      const attackWins = battle.attackArmy > battle.defenseArmy;
-
-      // Reset to bidding after battle settlement
-      if (attackWins) {
-        return {
-          ...state,
-          phase: 'bidding',
-          bidding: {
-            candidateWallet: null,
-            currentBidAmount: 0,
-            nextRequiredBid: GAME_CONSTANTS.INITIAL_BID,
-            thronePot: 0,
-            deadline: null,
-          },
-          battle: {
-            kingWallet: '',
-            attackArmy: 0,
-            defenseArmy: 0,
-            attackPool: 0,
-            defensePool: 0,
-            deadline: null,
-            isBattleActive: false,
-          },
-        };
-      } else {
-        // Defense wins (or tie) — king stays, battle resets
-        return {
-          ...state,
-          battle: {
-            ...state.battle,
-            attackArmy: 0,
-            defenseArmy: 0,
-            attackPool: 0,
-            defensePool: 0,
-            deadline: null,
-            isBattleActive: false,
-          },
-        };
-      }
-    }
-
-    case 'SET_STATE':
-      return action.state;
-
-    case 'TICK':
-      return state;
-
-    default:
-      return state;
-  }
+  return {
+    phase,
+    bidding: {
+      candidateWallet: candidateWallet === DEFAULT_PUBKEY ? null : candidateWallet,
+      currentBidAmount: raw.lastBidAmount.toNumber(),
+      nextRequiredBid: raw.nextBidAmount.toNumber(),
+      thronePot: raw.thronePot.toNumber() / ONE_TOKEN,
+      deadline: raw.biddingDeadline.toNumber() === 0
+        ? null
+        : raw.biddingDeadline.toNumber() * 1000, // unix seconds → ms
+    },
+    battle: {
+      kingWallet: kingWallet === DEFAULT_PUBKEY ? '' : kingWallet,
+      attackArmy: raw.attackSoldiers.toNumber(),
+      defenseArmy: raw.defenseSoldiers.toNumber(),
+      attackPool: raw.attackPool.toNumber() / ONE_TOKEN,
+      defensePool: raw.defensePool.toNumber() / ONE_TOKEN,
+      deadline: raw.battleDeadline.toNumber() === 0
+        ? null
+        : raw.battleDeadline.toNumber() * 1000,
+      isBattleActive: raw.battleActive,
+    },
+  };
 }
+
+const EMPTY_STATE: GameState = {
+  phase: 'bidding',
+  bidding: {
+    candidateWallet: null,
+    currentBidAmount: 0,
+    nextRequiredBid: 1,
+    thronePot: 0,
+    deadline: null,
+  },
+  battle: {
+    kingWallet: '',
+    attackArmy: 0,
+    defenseArmy: 0,
+    attackPool: 0,
+    defensePool: 0,
+    deadline: null,
+    isBattleActive: false,
+  },
+};
 
 interface GameContextValue {
   state: GameState;
-  dispatch: React.Dispatch<GameAction>;
-  loadPreset: (key: string) => void;
+  refresh: () => Promise<void>;
+  loading: boolean;
+  error: string | null;
 }
 
 const GameContext = createContext<GameContextValue | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(gameReducer, MOCK_STATES.freshBidding);
+  const { connection } = useConnection();
+  const [state, setState] = useState<GameState>(EMPTY_STATE);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const loadPreset = useCallback((key: string) => {
-    const preset = MOCK_STATES[key];
-    if (preset) {
-      // Refresh deadlines relative to now
-      const refreshed = JSON.parse(JSON.stringify(preset)) as GameState;
-      if (refreshed.bidding.deadline) {
-        refreshed.bidding.deadline = Date.now() + 3 * 60 * 1000;
-      }
-      if (refreshed.battle.deadline) {
-        refreshed.battle.deadline = Date.now() + 7 * 60 * 1000;
-      }
-      dispatch({ type: 'SET_STATE', state: refreshed });
+  const fetchState = useCallback(async () => {
+    try {
+      const provider = new AnchorProvider(connection, {} as any, { commitment: 'confirmed' });
+      const program = new Program(idl as Idl, provider);
+
+      const [gameStatePda] = PublicKey.findProgramAddressSync(
+        [GAME_STATE_SEED],
+        PROGRAM_ID
+      );
+
+      const raw = await (program.account as any).gameState.fetch(gameStatePda);
+      setState(parseOnChainState(raw));
+      setError(null);
+    } catch (e: any) {
+      console.error('Failed to fetch game state:', e);
+      setError(e.message || 'Failed to fetch game state');
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [connection]);
+
+  // Initial fetch + polling every 3 seconds
+  useEffect(() => {
+    fetchState();
+    const interval = setInterval(fetchState, 3000);
+    return () => clearInterval(interval);
+  }, [fetchState]);
 
   return (
-    <GameContext.Provider value={{ state, dispatch, loadPreset }}>
+    <GameContext.Provider value={{ state, refresh: fetchState, loading, error }}>
       {children}
     </GameContext.Provider>
   );
