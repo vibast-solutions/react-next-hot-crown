@@ -3,25 +3,42 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0D0B1A;
+  --foreground: #E8E4F0;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Wallet adapter modal overrides */
+.wallet-adapter-modal-wrapper {
+  background-color: #1A0F3C !important;
+}
+
+.wallet-adapter-button {
+  background-color: #2D1B69 !important;
+}
+
+.wallet-adapter-button:hover {
+  background-color: #3D2B79 !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D0B1A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2D1B69;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3D2B79;
 }
