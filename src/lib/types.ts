@@ -20,6 +20,7 @@ export interface BattleState {
 
 export interface GameState {
   phase: GamePhase;
+  paused: boolean;
   bidding: BiddingState;
   battle: BattleState;
 }

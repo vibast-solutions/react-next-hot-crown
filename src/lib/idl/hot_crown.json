@@ -1118,6 +1118,10 @@
             "type": "bool"
           },
           {
+            "name": "one_token",
+            "type": "u64"
+          },
+          {
             "name": "phase",
             "type": {
               "defined": {

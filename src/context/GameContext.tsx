@@ -9,20 +9,21 @@ import { PROGRAM_ID, GAME_STATE_SEED } from '@/lib/constants';
 import idl from '@/lib/idl/hot_crown.json';
 
 const DEFAULT_PUBKEY = PublicKey.default.toBase58();
-const ONE_TOKEN = 1_000_000;
 
 function parseOnChainState(raw: any): GameState {
   const phase = raw.phase.bidding ? 'bidding' : 'battle';
   const candidateWallet = raw.candidate.toBase58();
   const kingWallet = raw.king.toBase58();
+  const oneToken = raw.oneToken.toNumber();
 
   return {
     phase,
+    paused: raw.paused,
     bidding: {
       candidateWallet: candidateWallet === DEFAULT_PUBKEY ? null : candidateWallet,
       currentBidAmount: raw.lastBidAmount.toNumber(),
       nextRequiredBid: raw.nextBidAmount.toNumber(),
-      thronePot: raw.thronePot.toNumber() / ONE_TOKEN,
+      thronePot: raw.thronePot.toNumber() / oneToken,
       deadline: raw.biddingDeadline.toNumber() === 0
         ? null
         : raw.biddingDeadline.toNumber() * 1000, // unix seconds → ms
@@ -31,8 +32,8 @@ function parseOnChainState(raw: any): GameState {
       kingWallet: kingWallet === DEFAULT_PUBKEY ? '' : kingWallet,
       attackArmy: raw.attackSoldiers.toNumber(),
       defenseArmy: raw.defenseSoldiers.toNumber(),
-      attackPool: raw.attackPool.toNumber() / ONE_TOKEN,
-      defensePool: raw.defensePool.toNumber() / ONE_TOKEN,
+      attackPool: raw.attackPool.toNumber() / oneToken,
+      defensePool: raw.defensePool.toNumber() / oneToken,
       deadline: raw.battleDeadline.toNumber() === 0
         ? null
         : raw.battleDeadline.toNumber() * 1000,
@@ -43,6 +44,7 @@ function parseOnChainState(raw: any): GameState {
 
 const EMPTY_STATE: GameState = {
   phase: 'bidding',
+  paused: false,
   bidding: {
     candidateWallet: null,
     currentBidAmount: 0,
