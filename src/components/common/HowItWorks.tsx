@@ -117,6 +117,24 @@ export default function HowItWorks() {
                   Get dethroned and it all burns. Every action burns tokens. The crown is hot — hold it if you can!
                 </p>
               </div>
+
+              {/* The Alchemist */}
+              <div className="border-t border-royal-purple/20 pt-5">
+                <div className="bg-gradient-to-br from-royal-purple/10 to-crown-ember/5 border border-crown-ember/20 rounded-xl p-4">
+                  <p className="font-cinzel text-sm text-crown-ember mb-2">The Alchemist</p>
+                  <p className="text-sm text-gray-400 italic leading-relaxed">
+                    Behind the throne, beyond the battles, dwells the Alchemist — an ancient presence
+                    that no king can command and no army can touch. Every bid placed, every soldier
+                    marched, feeds a fraction of its tokens into his immortal furnace. Kings rise and
+                    fall. The Alchemist endures.
+                  </p>
+                  <p className="text-sm text-gray-400 italic leading-relaxed mt-2">
+                    They say the more he consumes, the more the realm expands — new arenas,
+                    new games, new ways to burn. Feed the Alchemist well, and the kingdom
+                    may yet see wonders no crown could ever buy.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

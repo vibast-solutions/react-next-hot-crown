@@ -15,8 +15,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Hot Crown',
-  description: 'Bid for the throne. Defend or attack the king. A Solana game.',
+  title: 'Hot Crown — Bid, Battle, Burn',
+  description: 'Bid for the throne. Attack the king or defend him. Every move burns tokens. The crown is hot — hold it if you can. A Solana on-chain game.',
+  metadataBase: new URL('https://hotcrown.io'),
+  keywords: ['solana', 'game', 'defi', 'token', 'burn', 'crown', 'battle', 'bid', 'on-chain'],
+  openGraph: {
+    title: 'Hot Crown — Bid, Battle, Burn',
+    description: 'Bid for the throne. Attack the king or defend him. Every move burns tokens. The crown is hot — hold it if you can.',
+    siteName: 'Hot Crown',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hot Crown — Bid, Battle, Burn',
+    description: 'Bid for the throne. Attack the king or defend him. Every move burns tokens. A Solana on-chain game.',
+  },
 };
 
 export default function RootLayout({
